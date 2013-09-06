@@ -591,7 +591,7 @@
   }
 
   public struct FaceData {
-    ulong data;
+    private ulong data;
 
     public FaceData(uint face) {
       this.data = 0;
@@ -605,10 +605,13 @@
     }
 
     public CornerId Center {
-      get { return (CornerId)(this.data >> 60); }
+      get { 
+        return (CornerId)(this.data >> 60); 
+      }
+
       set {
-        data &= ~(0x7UL << 60);
-        data |= (ulong)value << 60;
+        this.data &= ~(0x7UL << 60);
+        this.data |= (ulong)value << 60;
       }
     }
 

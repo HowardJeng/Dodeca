@@ -83,15 +83,22 @@
       Vector3 from = Vector3.Transform(DodecaModel.Normal(face), ModelOrientation);
       Vector3 to = Vector3.UnitZ;
 
-      Quaternion q = Utility.ShortestArc(from, to);
-      this.goalOrientation = q * this.ModelOrientation;
-      this.goalOrientation.Normalize();
-
-      double distance = Math.Acos(q.W);
-      if (this.mode == ActionMode.User) {
-        this.timeLeft = TimeSpan.FromSeconds(distance * 1.0);
+      if (Utility.EffectivelyEqual(Vector3.Dot(from, to), 1)) {
+        this.goalOrientation = DodecaModel.GetFaceOrientation(face);
+        from = Vector3.Transform(Vector3.UnitY, this.ModelOrientation);
+        to = Vector3.Transform(Vector3.UnitY, this.goalOrientation);
+        this.timeLeft = TimeSpan.FromSeconds(Utility.AngularDistance(from, to) * 0.5);
       } else {
-        this.timeLeft = TimeSpan.FromSeconds(distance * 0.5);
+        Quaternion q = Utility.ShortestArc(from, to);
+        this.goalOrientation = q * this.ModelOrientation;
+        this.goalOrientation.Normalize();
+
+        double distance = Utility.AngularDistance(q);
+        if (this.mode == ActionMode.User) {
+          this.timeLeft = TimeSpan.FromSeconds(distance * 0.5);
+        } else {
+          this.timeLeft = TimeSpan.FromSeconds(distance * 0.25);
+        }
       }
     }
   }

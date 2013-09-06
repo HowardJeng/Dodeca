@@ -43,8 +43,11 @@
     }
 
     internal static double AngularDistance(Vector3 from, Vector3 to) {
-      Quaternion dist = ShortestArc(from, to);
-      return Math.Acos(dist.W);
+      return AngularDistance(ShortestArc(from, to));
+    }
+
+    internal static double AngularDistance(Quaternion q) {
+      return Math.Atan2(new Vector3(q.X, q.Y, q.Z).Length(), q.W) * 2.0;
     }
   }
 }
