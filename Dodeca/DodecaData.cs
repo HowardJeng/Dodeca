@@ -23,40 +23,6 @@
     Northwest 
   }
 
-  public struct CenterData {
-    private CornerId facing;
-
-    public CenterData(CornerId facing) {
-      this.facing = facing;
-    }
-
-    public CornerId Facing {
-      get { return this.facing; }
-    }
-
-    public static bool operator !=(CenterData left, CenterData right) {
-      return !(left == right);
-    }
-
-    public static bool operator ==(CenterData left, CenterData right) {
-      return left.facing == right.facing;
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) { return false; }
-      if (ReferenceEquals(this, obj)) { return true; }
-      if (obj is CenterData) {
-        CenterData other = (CenterData)obj;
-        return this == other;
-      }
-      return false;
-    }
-
-    public override int GetHashCode() {
-      return (int)this.facing;
-    }
-  }
-
   public struct CornerData {
     private uint data;
 
@@ -75,6 +41,10 @@
 
     public uint Face {
       get { return this.data / 5; }
+    }
+
+    public uint Data {
+      get { return this.data; }
     }
 
     public static bool operator !=(CornerData left, CornerData right) {
@@ -156,7 +126,7 @@
       return false;
     }
 
-    public CenterData GetCenter(uint face) {
+    public CornerId GetCenter(uint face) {
       switch (face) {
         case 0:
           return this.f1.Center;
@@ -296,8 +266,8 @@
                            face, EdgeId.Southwest,
                            face, EdgeId.Northwest);
 
-      CenterData cd = this.GetCenter(face);
-      this.SetCenter(face, new CenterData((CornerId)((uint)(cd.Facing + 4) % 5)));
+      CornerId cd = this.GetCenter(face);
+      this.SetCenter(face, (CornerId)((uint)(cd + 4) % 5));
 
       this.RotateCornersLeft(FaceAdjacency[face, (int)EdgeId.Northeast], CornerId.North,
                              FaceAdjacency[face, (int)EdgeId.Southeast], CornerId.Southwest,
@@ -331,8 +301,8 @@
                             face, EdgeId.Southwest,
                             face, EdgeId.Northwest);
 
-      CenterData cd = this.GetCenter(face);
-      this.SetCenter(face, new CenterData((CornerId)((uint)(cd.Facing + 1) % 5)));
+      CornerId cd = this.GetCenter(face);
+      this.SetCenter(face, (CornerId)((uint)(cd + 1) % 5));
 
       this.RotateCornersRight(FaceAdjacency[face, (int)EdgeId.Northeast], CornerId.North,
                               FaceAdjacency[face, (int)EdgeId.Southeast], CornerId.Southwest,
@@ -353,7 +323,7 @@
                               FaceAdjacency[face, (int)EdgeId.Northwest], CornerId.North);
     }
 
-    public void SetCenter(uint face, CenterData cd) {
+    public void SetCenter(uint face, CornerId cd) {
       switch (face) {
         case 0:
           this.f1.Center = cd;
@@ -585,6 +555,10 @@
       this.data = (face * 5) + (uint)edge;
     }
 
+    public uint Data {
+      get { return this.data; }
+    }
+
     public EdgeId Edge {
       get { return (EdgeId)(this.data % 5); }
     }
@@ -617,27 +591,25 @@
   }
 
   public struct FaceData {
-    private CornerData c1, c2, c3, c4, c5;
-    private CenterData center;
-    private EdgeData   e1, e2, e3, e4, e5;
+    ulong data;
 
     public FaceData(uint face) {
-      this.center = new CenterData(CornerId.North);
-      this.c1 = new CornerData(CornerId.North, face);
-      this.c2 = new CornerData(CornerId.Northeast, face);
-      this.c3 = new CornerData(CornerId.Southeast, face);
-      this.c4 = new CornerData(CornerId.Southwest, face);
-      this.c5 = new CornerData(CornerId.Northwest, face);
-      this.e1 = new EdgeData(EdgeId.Northeast, face);
-      this.e2 = new EdgeData(EdgeId.Southeast, face);
-      this.e3 = new EdgeData(EdgeId.South, face);
-      this.e4 = new EdgeData(EdgeId.Southwest, face);
-      this.e5 = new EdgeData(EdgeId.Northwest, face);
+      this.data = 0;
+      this.Center = CornerId.North;
+      foreach (CornerId c in Enum.GetValues(typeof(CornerId))) {
+        this.SetCorner(c, new CornerData(c, face));
+      }
+      foreach (EdgeId e in Enum.GetValues(typeof(EdgeId))) {
+        this.SetEdge(e, new EdgeData(e, face));
+      }
     }
 
-    public CenterData Center {
-      get { return this.center; }
-      set { this.center = value; }
+    public CornerId Center {
+      get { return (CornerId)(this.data >> 60); }
+      set {
+        data &= ~(0x7UL << 60);
+        data |= (ulong)value << 60;
+      }
     }
 
     public static bool operator !=(FaceData left, FaceData right) {
@@ -645,17 +617,7 @@
     }
 
     public static bool operator ==(FaceData left, FaceData right) {
-      return left.center == right.center &&
-             left.c1 == right.c1 &&
-             left.c2 == right.c2 &&
-             left.c3 == right.c3 &&
-             left.c4 == right.c4 &&
-             left.c5 == right.c5 &&
-             left.e1 == right.e1 &&
-             left.e2 == right.e2 &&
-             left.e3 == right.e3 &&
-             left.e4 == right.e4 &&
-             left.e5 == right.e5;
+      return left.data == right.data;
     }
 
     public override bool Equals(object obj) {
@@ -669,100 +631,29 @@
     }
 
     public CornerData GetCorner(CornerId corner) {
-      switch (corner) {
-        case CornerId.North:
-          return this.c1;
-        case CornerId.Northeast:
-          return this.c2;
-        case CornerId.Southeast:
-          return this.c3;
-        case CornerId.Southwest:
-          return this.c4;
-        case CornerId.Northwest:
-          return this.c5;
-        default:
-          Debug.Assert(false, "illegal corner value");
-          throw new ArgumentOutOfRangeException("corner", "illegal corner value");
-      }
+      int shift = (int)corner * 6;
+      return new CornerData((uint)((this.data >> shift) & 0x3f));
     }
 
     public EdgeData GetEdge(EdgeId edge) {
-      switch (edge) {
-        case EdgeId.Northeast:
-          return this.e1;
-        case EdgeId.Southeast:
-          return this.e2;
-        case EdgeId.South:
-          return this.e3;
-        case EdgeId.Southwest:
-          return this.e4;
-        case EdgeId.Northwest:
-          return this.e5;
-        default:
-          Debug.Assert(false, "illegal edge value");
-          throw new ArgumentOutOfRangeException("edge", "illegal edge value");
-      }
+      int shift = ((int)edge * 6) + 30;
+      return new EdgeData((uint)((this.data >> shift) & 0x3f));
     }
 
     public override int GetHashCode() {
-      int r = this.center.GetHashCode();
-      r = (r * 397) ^ this.c1.GetHashCode();
-      r = (r * 397) ^ this.c2.GetHashCode();
-      r = (r * 397) ^ this.c3.GetHashCode();
-      r = (r * 397) ^ this.c4.GetHashCode();
-      r = (r * 397) ^ this.c5.GetHashCode();
-      r = (r * 397) ^ this.e1.GetHashCode();
-      r = (r * 397) ^ this.e2.GetHashCode();
-      r = (r * 397) ^ this.e3.GetHashCode();
-      r = (r * 397) ^ this.e4.GetHashCode();
-      r = (r * 397) ^ this.e5.GetHashCode();
-      return r;
+      return (int)((this.data >> 32) * 397 ^ (this.data & 0xffffffff));
     }
 
     public void SetCorner(CornerId corner, CornerData cd) {
-      switch (corner) {
-        case CornerId.North:
-          this.c1 = cd;
-          break;
-        case CornerId.Northeast:
-          this.c2 = cd;
-          break;
-        case CornerId.Southeast:
-          this.c3 = cd;
-          break;
-        case CornerId.Southwest:
-          this.c4 = cd;
-          break;
-        case CornerId.Northwest:
-          this.c5 = cd;
-          break;
-        default:
-          Debug.Assert(false, "illegal corner value");
-          throw new ArgumentOutOfRangeException("corner", "illegal corner value");
-      }
+      int shift = (int)corner * 6;
+      this.data &= ~(0x3FUL << shift);
+      this.data |= (ulong)cd.Data << shift;
     }
 
     public void SetEdge(EdgeId edge, EdgeData ed) {
-      switch (edge) {
-        case EdgeId.Northeast:
-          this.e1 = ed;
-          break;
-        case EdgeId.Southeast:
-          this.e2 = ed;
-          break;
-        case EdgeId.South:
-          this.e3 = ed;
-          break;
-        case EdgeId.Southwest:
-          this.e4 = ed;
-          break;
-        case EdgeId.Northwest:
-          this.e5 = ed;
-          break;
-        default:
-          Debug.Assert(false, "illegal edge value");
-          throw new ArgumentOutOfRangeException("edge", "illegal edge value");
-      }
+      int shift = ((int)edge * 6) + 30;
+      this.data &= ~(0x3FUL << shift);
+      this.data |= (ulong)ed.Data << shift;
     }
   }
 }

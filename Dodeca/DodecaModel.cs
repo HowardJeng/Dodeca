@@ -11,12 +11,12 @@
       return face == this.Face;
     }
 
-    internal CenterFacet Init(CenterData cd, uint face, Quaternion q, uint rotationFace, Quaternion faceRotation) {
+    internal CenterFacet Init(CornerId cd, uint face, Quaternion q, uint rotationFace, Quaternion faceRotation) {
       base.Init(GetVertices(cd, face), face, q, rotationFace, faceRotation);
       return this;
     }
 
-    private static VertexPositionNormalTexture[] GetVertices(CenterData cd, uint face) {
+    private static VertexPositionNormalTexture[] GetVertices(CornerId cd, uint face) {
       VertexPositionNormalTexture[] vertices = new VertexPositionNormalTexture[5];
       for (int i = 0; i < 5; i++) {
         vertices[i].Position = ((DodecaModel.Vertices[DodecaModel.GetFaceVertices[face, (i + 4) % 5]] +
@@ -24,8 +24,8 @@
                                 DodecaModel.FaceOffset(face);
         vertices[i].Normal = DodecaModel.Normal(face);
         vertices[i].TextureCoordinate = DodecaModel.ConvertTextureCoord(
-                                          (DodecaModel.TexCoord((uint)(i + 4 + cd.Facing) % 5) +
-                                           DodecaModel.TexCoord((uint)(i + 1 + cd.Facing) % 5)) / 2,
+                                          (DodecaModel.TexCoord((uint)(i + 4 + cd) % 5) +
+                                           DodecaModel.TexCoord((uint)(i + 1 + cd) % 5)) / 2,
                                            face);
       }
       return vertices;
