@@ -36,8 +36,8 @@
         p.Normalize();
         return Quaternion.CreateFromAxisAngle(p, MathHelper.Pi);
       }
-      float angle = (float)Math.Acos(d);
       Vector3 c = Vector3.Cross(from, to);
+      float angle = (float)Math.Atan2(c.Length(), d);
       c.Normalize();
       return Quaternion.CreateFromAxisAngle(c, angle);
     }
