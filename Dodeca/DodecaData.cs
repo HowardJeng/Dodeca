@@ -32,6 +32,7 @@
     }
 
     public CornerData(CornerId corner, uint face) {
+      Debug.Assert(face < 12, "face out of range");
       this.data = (face * 5) + (uint)corner;
     }
 
@@ -552,6 +553,7 @@
     }
 
     public EdgeData(EdgeId edge, uint face) {
+      Debug.Assert(face < 12, "face out of range");
       this.data = (face * 5) + (uint)edge;
     }
 

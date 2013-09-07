@@ -29,12 +29,12 @@
       to.Normalize();
 
       Vector3 cross = Vector3.Cross(from, to);
-      if (Math.Abs(cross.Z) < 0.1) { return this; }
+      if (Math.Abs(cross.Z) < 0.5) { return this; }
 
       if (cross.Z > 0) {
-        return new RotateState(Shared, ActionMode.User, Rotation.Right, face);
+        return new RotateState(Shared, ActionMode.User, Rotation.Right, this.face);
       } else {
-        return new RotateState(Shared, ActionMode.User, Rotation.Left, face);
+        return new RotateState(Shared, ActionMode.User, Rotation.Left, this.face);
       }
     }
   }

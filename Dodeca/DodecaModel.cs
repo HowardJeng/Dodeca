@@ -195,20 +195,13 @@
       return (coord / 4) + new Vector2(0.25f * (face % 4), 0.25f * (face / 4));
     }
 
+    public static Vector3 FaceCenter(uint face) {
+      return Normals[face] * (float)Math.Cos(Alpha);
+    }
+
     public static Vector3 FaceOffset(uint face) {
       Debug.Assert(face < 12, "illegal face value");
       return Normals[face] * FaceSeperation;
-    }
-
-    public static Vector3 [] GetFacePickingVertices(uint face) {
-      Vector3 offset = FaceOffset(face);
-      return new Vector3[5] {
-        Vertices[FaceVertices[face, 0]] + offset,
-        Vertices[FaceVertices[face, 1]] + offset,
-        Vertices[FaceVertices[face, 2]] + offset,
-        Vertices[FaceVertices[face, 3]] + offset,
-        Vertices[FaceVertices[face, 4]] + offset
-      };
     }
 
     public static Quaternion GetFaceOrientation(uint face) {
@@ -234,6 +227,17 @@
       }
 
       return faceRotate * faceOrient;
+    }
+
+    public static Vector3[] GetFacePickingVertices(uint face) {
+      Vector3 offset = FaceOffset(face);
+      return new Vector3[5] {
+        Vertices[FaceVertices[face, 0]] + offset,
+        Vertices[FaceVertices[face, 1]] + offset,
+        Vertices[FaceVertices[face, 2]] + offset,
+        Vertices[FaceVertices[face, 3]] + offset,
+        Vertices[FaceVertices[face, 4]] + offset
+      };
     }
 
     public static uint NearFace(Quaternion orientation) {
@@ -319,10 +323,6 @@
 
     public void RotateRight(uint face) {
       this.data.RotateRight(face);
-    }
-
-    public static Vector3 FaceCenter(uint face) {
-      return Normals[face] * (float)Math.Cos(Alpha);
     }
 
     private static Vector3 SphericalToVector3(double radius, double theta, double phi) {

@@ -59,21 +59,23 @@
       float determinant = Vector3.Dot(e1, p);
 
       // ray is parallel to triangle plane
-      if (Utility.EffectivelyZero(determinant)) return null;
+      if (Utility.EffectivelyZero(determinant)) { return null; }
 
       Vector3 t = ray.Position - vertex1;
       float u = Vector3.Dot(t, p) / determinant;
+
       // intersection is outside area defined by first edge
-      if (u < 0 || u > 1) return null;
+      if (u < 0 || u > 1) { return null; }
 
       Vector3 q = Vector3.Cross(t, e1);
 
       float v = Vector3.Dot(ray.Direction, q) / determinant;
+
       // intersection outside triangle
-      if (v < 0 || (u + v) > 1) return null;
+      if (v < 0 || (u + v) > 1) { return null; }
 
       float rayDistance = Vector3.Dot(e2, q) / determinant;
-      if (rayDistance < 0) return null;
+      if (rayDistance < 0) { return null; }
       return rayDistance;
     }
   }
