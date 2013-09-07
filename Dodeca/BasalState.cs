@@ -73,7 +73,10 @@
       if (button == MouseButtons.LeftButton) {
         return new TrackballState(Shared, x, y);
       } else if (button == MouseButtons.RightButton) {
-        return new GestureState(Shared, x, y);
+        uint face = Shared.PickFace(x, y);
+        if (face < 12) {
+          return new GestureState(Shared, face, x, y);
+        }
       }
       return this;
     }

@@ -84,7 +84,7 @@
   }
 
   internal class DodecaModel {
-      // important angles
+    // important angles
     // 36 degrees
     public const double Deg36 = Math.PI * 36.0 / 180.0;
 
@@ -200,6 +200,17 @@
       return Normals[face] * FaceSeperation;
     }
 
+    public static Vector3 [] GetFacePickingVertices(uint face) {
+      Vector3 offset = FaceOffset(face);
+      return new Vector3[5] {
+        Vertices[FaceVertices[face, 0]] + offset,
+        Vertices[FaceVertices[face, 1]] + offset,
+        Vertices[FaceVertices[face, 2]] + offset,
+        Vertices[FaceVertices[face, 3]] + offset,
+        Vertices[FaceVertices[face, 4]] + offset
+      };
+    }
+
     public static Quaternion GetFaceOrientation(uint face) {
       Debug.Assert(face < 12, "illegal face value");
 
@@ -310,7 +321,7 @@
       this.data.RotateRight(face);
     }
 
-    private static Vector3 FaceCenter(uint face) {
+    public static Vector3 FaceCenter(uint face) {
       return Normals[face] * (float)Math.Cos(Alpha);
     }
 
